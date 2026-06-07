@@ -11,7 +11,6 @@ const startScheduledReminders = require('./utils/scheduledReminders');
 const app = express();
 connectDB();
 
-// ── CORS: allow localhost dev + Vercel production ──
 const allowedOrigins = [
   'http://localhost:3000',
   'https://gym-management-system-eight-kappa.vercel.app',
