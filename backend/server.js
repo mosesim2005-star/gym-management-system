@@ -13,6 +13,7 @@ connectDB();
 
 const allowedOrigins = [
   'http://localhost:3000',
+    'http://192.168.0.137:3000',
   'https://gym-management-system-eight-kappa.vercel.app',
 ];
 
