@@ -2,11 +2,7 @@ const OTP = require('../models/OTP');
 const jwt = require('jsonwebtoken');
 const sendEmail = require('../utils/sendEmail');
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@gym.com';
-
-const generateOTP = () => {
-  return Math.floor(1000 + Math.random() * 9000).toString();
-};
+const generateOTP = () => Math.floor(1000 + Math.random() * 9000).toString();
 
 const getMidnightExpiry = () => {
   const now = new Date();
@@ -23,19 +19,29 @@ exports.requestOTP = async (req, res) => {
       return res.status(400).json({ message: 'Email is required' });
     }
 
+    // Log env check on every OTP request
+    console.log('[requestOTP] email:', email);
+    console.log('[requestOTP] SMTP_EMAIL:', process.env.SMTP_EMAIL);
+    console.log('[requestOTP] SMTP_PASSWORD set:', !!process.env.SMTP_PASSWORD);
+    console.log('[requestOTP] JWT_SECRET set:', !!process.env.JWT_SECRET);
+    console.log('[requestOTP] MONGO_URI set:', !!process.env.MONGO_URI);
+
     const otp = generateOTP();
     const expiresAt = new Date(Date.now() + 3 * 60 * 1000);
 
     await OTP.deleteMany({ email });
-
     await OTP.create({ email, otp, expiresAt });
 
+    console.log('[requestOTP] OTP created, sending email...');
     await sendEmail(email, otp);
+    console.log('[requestOTP] Email sent successfully');
 
     res.status(200).json({ message: 'OTP sent successfully' });
   } catch (error) {
-    console.error('requestOTP error:', error);
-    res.status(500).json({ message: 'Failed to send OTP' });
+    console.error('[requestOTP] FULL ERROR:', error);
+    console.error('[requestOTP] error message:', error.message);
+    console.error('[requestOTP] error stack:', error.stack);
+    res.status(500).json({ message: 'Failed to send OTP', detail: error.message });
   }
 };
 
@@ -79,7 +85,7 @@ exports.verifyOTP = async (req, res) => {
       expiresAt: tokenExpiry,
     });
   } catch (error) {
-    console.error('verifyOTP error:', error);
-    res.status(500).json({ message: 'Verification failed' });
+    console.error('[verifyOTP] FULL ERROR:', error);
+    res.status(500).json({ message: 'Verification failed', detail: error.message });
   }
 };
