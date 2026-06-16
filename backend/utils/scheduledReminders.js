@@ -1,9 +1,5 @@
-// ─────────────────────────────────────────────────────────────
-// scheduledReminders.js
-// Place: backend/utils/scheduledReminders.js
-// Cron job — auto sends reminder emails before/on expiry
-// ─────────────────────────────────────────────────────────────
-
+// backend/utils/scheduledReminders.js
+const mongoose = require('mongoose');
 const Member = require('../models/Member');
 const nodemailer = require('nodemailer');
 const buildRenewalEmailHTML = require('./reminderEmail');
@@ -17,7 +13,6 @@ const createTransporter = () =>
     },
   });
 
-// Days-before thresholds for auto reminders
 const REMINDER_DAYS = [7, 3, 1, 0];
 
 const sendAutoReminderEmail = async (member, daysLeft) => {
@@ -41,10 +36,14 @@ const sendAutoReminderEmail = async (member, daysLeft) => {
   });
 };
 
-// ── Main scheduler function — call this once at server start ──
 const startScheduledReminders = () => {
-  // Run every day at 9:00 AM
   const runCheck = async () => {
+    // ✅ Skip silently if DB is not ready yet
+    if (mongoose.connection.readyState !== 1) {
+      console.log('[Scheduler] Skipping — DB not connected yet, will retry next cycle');
+      return;
+    }
+
     try {
       const now = new Date();
       console.log(`[Scheduler] Running reminder check at ${now.toISOString()}`);
@@ -63,7 +62,6 @@ const startScheduledReminders = () => {
         }
       }
 
-      // Also mark expired members
       await Member.updateMany(
         { expiryDate: { $lt: now }, membershipStatus: 'Active' },
         { membershipStatus: 'Expired' }
@@ -75,10 +73,10 @@ const startScheduledReminders = () => {
     }
   };
 
-  // Run once immediately on boot (catches missed overnight checks)
+  // Run immediately on boot
   runCheck();
 
-  // Then run every 24 hours
+  // Then every 24 hours
   setInterval(runCheck, 24 * 60 * 60 * 1000);
 };
 
