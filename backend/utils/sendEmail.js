@@ -17,12 +17,27 @@
   // SHARED TRANSPORTER
   // ─────────────────────────────────────────
   const createTransporter = () => {
-    const user = process.env.SMTP_EMAIL;
-    const pass = process.env.SMTP_PASSWORD;
-    if (!user) throw new Error('SMTP_EMAIL is not set in .env');
-    if (!pass) throw new Error('SMTP_PASSWORD is not set in .env');
-    return nodemailer.createTransport({ service: 'gmail', auth: { user, pass } });
-  };
+const user = process.env.SMTP_EMAIL;
+const pass = process.env.SMTP_PASSWORD;
+
+if (!user) {
+throw new Error('SMTP_EMAIL is not set in .env');
+}
+
+if (!pass) {
+throw new Error('SMTP_PASSWORD is not set in .env');
+}
+
+return nodemailer.createTransport({
+host: process.env.SMTP_HOST || 'smtp.gmail.com',
+port: Number(process.env.SMTP_PORT || 587),
+secure: false,
+auth: {
+user,
+pass,
+},
+});
+};
 
   // ─────────────────────────────────────────
   // 1. OTP EMAIL
