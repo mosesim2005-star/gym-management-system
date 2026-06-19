@@ -29,6 +29,6 @@ yarn-error.log*
 Thumbs.db
 
 # -- Coverage --
-/coverage
+coverage/
 frontend/coverage/
 backend/coverage/
