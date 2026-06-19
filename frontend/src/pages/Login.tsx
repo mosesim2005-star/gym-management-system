@@ -96,7 +96,7 @@ const Login: React.FC = () => {
     setLoading(true);
     setError('');
     try {
-      await api.post('/auth/request-otp', { email });
+await api.post('/api/auth/request-otp', { email });
       // Start panel swap animation
       setSwapping(true);
       setTimeout(() => {
